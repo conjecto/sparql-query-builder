@@ -619,8 +619,10 @@ class QueryBuilder
             return $this;
         }
 
-        $construct = is_array($construct) ? $construct : [$construct];
-        $construct = new Expr\Construct($construct);
+        if(!($construct instanceof Expr\Construct)) {
+            $construct = is_array($construct) ? $construct : [$construct];
+            $construct = new Expr\Construct($construct);
+        }
 
         return $this->add('construct', $construct, $append);
     }
@@ -639,8 +641,10 @@ class QueryBuilder
             throw new \InvalidArgumentException('You must specify what you want to select');
         }
 
-        $select = is_array($select) ? $select : [$select];
-        $select = new Expr\Select($select);
+        if(!($select instanceof Expr\Select)) {
+            $select = is_array($select) ? $select : [$select];
+            $select = new Expr\Select($select);
+        }
 
         return $this->add('select', $select, $append);
     }
@@ -659,8 +663,10 @@ class QueryBuilder
             throw new \InvalidArgumentException('You must specify what you want to describe');
         }
 
-        $describe = is_array($describe) ? $describe : [$describe];
-        $describe = new Expr\Describe($describe);
+        if(!($describe instanceof Expr\Describe)) {
+            $describe = is_array($describe) ? $describe : [$describe];
+            $describe = new Expr\Describe($describe);
+        }
 
         return $this->add('describe', $describe, $append);
     }
@@ -673,8 +679,10 @@ class QueryBuilder
             return $this;
         }
 
-        $ask = is_array($ask) ? $ask : [$ask];
-        $ask = new Expr\Ask($ask);
+        if(!($ask instanceof Expr\Ask)) {
+            $ask = is_array($ask) ? $ask : [$ask];
+            $ask = new Expr\Ask($ask);
+        }
 
         return $this->add('ask', $ask, $append);
     }
@@ -685,9 +693,9 @@ class QueryBuilder
      *
      * @return QueryBuilder
      */
-    protected function addInsertToQuery($select, $append)
+    protected function addInsertToQuery($insert, $append)
     {
-        if (empty($select)) {
+        if (empty($insert)) {
             throw new \InvalidArgumentException('You must specify what you want to select');
         }
 
@@ -697,10 +705,12 @@ class QueryBuilder
             $this->type = self::INSERT;
         }
 
-        $select = is_array($select) ? $select : [$select];
-        $select = new Expr\Insert($select);
+        if(!($insert instanceof Expr\Insert)) {
+            $insert = is_array($insert) ? $insert : [$insert];
+            $insert = new Expr\Insert($insert);
+        }
 
-        return $this->add('insert', $select, $append);
+        return $this->add('insert', $insert, $append);
     }
 
     /**
@@ -725,8 +735,10 @@ class QueryBuilder
             throw new \InvalidArgumentException('You can not use a blank node in deletion');
         }
 
-        $delete = is_array($delete) ? $delete : [$delete];
-        $delete = new Expr\Delete($delete);
+        if(!($delete instanceof Expr\Delete)) {
+            $delete = is_array($delete) ? $delete : [$delete];
+            $delete = new Expr\Delete($delete);
+        }
 
         return $this->add('delete', $delete, $append);
     }
@@ -743,8 +755,10 @@ class QueryBuilder
             throw new \InvalidArgumentException('You must specify with which property you want to filter');
         }
 
-        $where = is_array($where) ? $where : [$where];
-        $where = new Expr\Where($where);
+        if(!($where instanceof Expr\Where)) {
+            $where = is_array($where) ? $where : [$where];
+            $where = new Expr\Where($where);
+        }
 
         return $this->add('where', $where, $append);
     }
@@ -755,17 +769,19 @@ class QueryBuilder
      *
      * @return QueryBuilder
      */
-    protected function addUnionToQuery($arrayPredicates, $append)
+    protected function addUnionToQuery($union, $append)
     {
-        if (!is_array($arrayPredicates)) {
-            throw new \InvalidArgumentException('The union must have at least two parts');
+        if(!($union instanceof Expr\Union)) {
+            if (!is_array($union)) {
+                throw new \InvalidArgumentException('The union must have at least two parts');
+            }
+            if (count($union) < 2) {
+                throw new \InvalidArgumentException('The union must have at least two parts');
+            }
+            $union = new Expr\Union($union);
         }
 
-        if (count($arrayPredicates) < 2) {
-            throw new \InvalidArgumentException('The union must have at least two parts');
-        }
-
-        return $this->add('where', new Expr\Union($arrayPredicates), $append);
+        return $this->add('where', $union, $append);
     }
 
     /**
@@ -797,14 +813,17 @@ class QueryBuilder
      */
     protected function addValueToQuery($key, $value, $append)
     {
-        if (empty($value)) {
-            throw new \InvalidArgumentException('You must specify a correct value');
-        }
-        if (empty($key)) {
-            throw new \InvalidArgumentException('You must specify correct type');
+        if(!($value instanceof Expr\Value)) {
+            if (empty($value)) {
+                throw new \InvalidArgumentException('You must specify a correct value');
+            }
+            if (empty($key)) {
+                throw new \InvalidArgumentException('You must specify correct type');
+            }
+            $value = new Expr\Value($key, $value);
         }
 
-        return $this->add('value', new Expr\Value($key, $value), $append);
+        return $this->add('value', $value, $append);
     }
 
     /**
@@ -816,15 +835,18 @@ class QueryBuilder
      */
     protected function addBindToQuery($value, $key, $append)
     {
-        if (empty($value)) {
-            throw new \InvalidArgumentException('You must specify what you want to bind');
+        if(!($value instanceof Expr\Bind)) {
+            if (empty($value)) {
+                throw new \InvalidArgumentException('You must specify what you want to bind');
+            }
+            if (is_string($value)) {
+                $value = new Expr\Bind('('.$value.')'.' AS '.$key);
+            } else {
+                $value = new Expr\Bind(is_array($value) ? $value : func_get_args());
+            }
         }
 
-        if (is_string($value)) {
-            return $this->add('bind', new Expr\Bind('('.$value.')'.' AS '.$key), $append);
-        } else {
-            return $this->add('bind', new Expr\Bind(is_array($value) ? $value : func_get_args()), $append);
-        }
+        return $this->add('bind', $value, $append);
     }
 
     /**
@@ -838,8 +860,11 @@ class QueryBuilder
         if (empty($optional)) {
             throw new \InvalidArgumentException('You must specify what you want to render optional');
         }
-        $optional = is_array($optional) ? $optional : [$optional];
-        $optional = new Expr\Optional($optional);
+
+        if(!($optional instanceof Expr\Optional)) {
+            $optional = is_array($optional) ? $optional : [$optional];
+            $optional = new Expr\Optional($optional);
+        }
 
         return $this->add('optional', $optional, $append);
     }
@@ -856,8 +881,10 @@ class QueryBuilder
             throw new \InvalidArgumentException('You must specify what you want to filter');
         }
 
-        $filter = is_array($filter) ? $filter : [$filter];
-        $filter = new Expr\Filter($filter);
+        if(!($filter instanceof Expr\Filter)) {
+            $filter = is_array($filter) ? $filter : [$filter];
+            $filter = new Expr\Filter($filter);
+        }
 
         return $this->add('filter', $filter, $append);
     }
@@ -896,7 +923,9 @@ class QueryBuilder
             throw new \InvalidArgumentException('You must specify which property you want to group by');
         }
 
-        $groupBy = new Expr\GroupBy([$groupBy]);
+        if(!($groupBy instanceof Expr\GroupBy)) {
+            $groupBy = new Expr\GroupBy([$groupBy]);
+        }
 
         return $this->add('groupBy', $groupBy, $append);
     }
