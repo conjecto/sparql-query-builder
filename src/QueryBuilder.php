@@ -539,7 +539,7 @@ class QueryBuilder
 
         $query = "";
         foreach($this->prefixes as $prefix => $uri) {
-            $query .= "prefix $prefix: <$uri>\n";
+            $query .= "PREFIX $prefix: <$uri>\n";
         }
 
         switch ($this->type) {
