@@ -1,0 +1,26 @@
+{
+  "name": "conjecto/sparql-query-builder",
+  "license": "conjecto",
+  "keywords": ["sparql","query"],
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Conjecto\\SparqlQueryBuilder\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Conjecto\\SparqlQueryBuilder\\": "tests/"
+    }
+  },
+  "require": {
+    "php": ">=7.0.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.0",
+    "phpunit/php-invoker": "^1.1",
+    "phpunit/php-code-coverage": "^5.2",
+    "friendsofphp/php-cs-fixer": "^2.1",
+    "symfony/var-dumper": "^3.3"
+  }
+}

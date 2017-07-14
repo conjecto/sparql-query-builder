@@ -1,0 +1,12 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->exclude('cache')
+    ->notName('*.twig')
+    ->in(array(__DIR__));
+
+return PhpCsFixer\Config::create()
+    ->setRules(array(
+        '@Symfony' => true
+    ))
+    ->setFinder($finder);
