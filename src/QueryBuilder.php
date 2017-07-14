@@ -688,9 +688,8 @@ class QueryBuilder
     }
 
     /**
-     * @param $select
+     * @param $insert
      * @param $append
-     *
      * @return QueryBuilder
      */
     protected function addInsertToQuery($insert, $append)
@@ -764,9 +763,8 @@ class QueryBuilder
     }
 
     /**
-     * @param $arrayPredicates
+     * @param $union
      * @param $append
-     *
      * @return QueryBuilder
      */
     protected function addUnionToQuery($union, $append)
@@ -977,6 +975,9 @@ class QueryBuilder
         return $sparqlQuery;
     }
 
+    /**
+     * @return string
+     */
     protected function getQueryForDescribe()
     {
         $sparqlQuery = 'DESCRIBE'
